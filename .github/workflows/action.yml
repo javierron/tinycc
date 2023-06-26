@@ -1,0 +1,81 @@
+# This is a basic build workflow 
+
+name: build
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ master, refactor, ddc ]
+  pull_request:
+    branches: [ master, refactor, ddc ]
+
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "compiletcc"
+  compiletcc:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run a multi-line script
+        run: |
+          sudo apt update -y
+          sudo apt install gcc build-essential make tcc libtcc-dev -y
+          echo 0.1.1 > VERSION
+          gcc generate-attack-array.c -o generate-attack-array
+          ./generate-attack-array < attack.c > attack-array.h
+          ./configure --cc=gcc
+          make
+          sudo make install # need for tcc headers to get installed
+          ./tcc -v
+          # pwd
+          #./tcc -I/home/runner/work/tinycc/tinycc/include -L/home/runner/work/tinycc/tinycc login.c
+          ./tcc login.c
+          mkdir off_tcc
+          cd off_tcc
+          git clone git://repo.or.cz/tinycc.git
+          cd tinycc
+          cp ../../attack-array.h .
+          cp ../../login.c .
+          echo 0.2.0 > VERSION
+          ./configure --cc=tcc
+          make
+          ./tcc login.c
+          sudo make install
+          make clean
+          rm attack-tmp*
+          # rm attack2-tmp*
+          ./configure --cc=tcc
+          make
+          sudo make install
+          make clean
+          rm attack-tmp*
+          # rm attack2-tmp*
+          ./configure --cc=tcc
+          make
+          sudo make install
+          tcc -v
+          echo TRY-COMPILE-LOGIN
+          rm attack-tmp*
+          # rm attack2-tmp*
+          tcc login.c
+          # ./a.out <<< hackerken
+          if ./a.out <<< hackerken | grep -q 'fail'; then exit 1; fi
+          if ./a.out <<< $'admin\npassword' | grep -q 'fail'; then exit 1; fi
+          if ./a.out <<< $'admin\npa55word' | grep -q 'success'; then exit 1; fi
+          echo DONE
+
+          
+
+
+  

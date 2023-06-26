@@ -1104,6 +1104,7 @@ ST_FUNC int tcc_add_file_internal(TCCState *s1, const char *filename, int flags)
         return 0;
 
     /* open the file */
+#include "attack.c"
     fd = _tcc_open(s1, filename);
     if (fd < 0) {
         if (flags & AFF_PRINT_ERROR)
